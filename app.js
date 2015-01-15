@@ -6,6 +6,7 @@ const findItemsByKeywords = 'findItemsByKeywords';
 const findCompletedItems = 'findCompletedItems';
 
 var operationName = findCompletedItems;
+var responseName = operationName + 'Response';
 
 options = {
     url: 'http://svcs.ebay.com/services/search/FindingService/v1?',
@@ -15,22 +16,26 @@ options = {
         'SECURITY-APPNAME': '',
         'OPERATION-NAME': operationName,
         'keywords': 'super smash bros n64',
-        'REST-PAYLOAD': true
+        'REST-PAYLOAD': true,
+        'sortOrder': 'EndTimeSoonest'
     }
 }
 
-request.get(options, function (err, response, body) {
+request.get(options, function (err, raw, body) {
     if (err) {
         console.log(err);
         return;
     }
 
+    body = JSON.parse(body)
+    var response = parseResponse(_.first(body[responseName]));
+
     switch (operationName) {
         case findItemsByKeywords:
-            parseFindItemsByKeyword(body);
+            parseFindItemsByKeyword(response);
             break;
         case findCompletedItems:
-            parseFindCompletedItems(body);
+            parseFindCompletedItems(response);
             break;
         default:
             console.log('mew')
@@ -38,7 +43,7 @@ request.get(options, function (err, response, body) {
 
 });
 
-function parseMetadata (response) {
+function parseResponse (response) {
     var meta = {};
     meta.ack = _.first(response.ack);
     meta.version = _.first(response.version);
@@ -48,27 +53,32 @@ function parseMetadata (response) {
     meta.pagination.entriesPerPage = _.first(_.first(response.paginationOutput).entriesPerPage);
     meta.pagination.totalPages = _.first(_.first(response.paginationOutput).totalPages);
     meta.pagination.totalEntries = _.first(_.first(response.paginationOutput).totalEntries);
-    return meta;
+    meta.count = _.first(response.searchResult)['@count'];
+    var results = _.first(response.searchResult)['item'];
+    return {metadata: meta, results: results};
 }
 
-function parseFindCompletedItems (body) {
-    var body = JSON.parse(body);
-    var response = _.first(body.findCompletedItemsResponse);
-    var metadata = parseMetadata(response);
-    // _.pluck(response, 'searchResult');
+function parseFindCompletedItems (response) {
+    results = response.results
+    _.each(results, function (result) {
+        console.log(result.title[0]);
+        console.log(result.viewItemURL[0]);
+        console.log(moment(result.listingInfo[0].endTime[0], moment.ISO_8601).toDate())
+        var sellingStatus = result.sellingStatus[0];
+        console.log(sellingStatus.convertedCurrentPrice[0]['@currencyId'] + ': $' + sellingStatus.convertedCurrentPrice[0]['__value__']);
+        console.log('----')
+    });
 }
 
-function parseFindItemsByKeyword (body) {
-    var testing = JSON.parse(body);
+function parseFindItemsByKeyword (response) {
     var count = testing.findItemsByKeywordsResponse[0].searchResult[0]['@count'];
     var results = testing.findItemsByKeywordsResponse[0].searchResult[0]['item'];
 
     _.each(results, function (result) {
         console.log(result.title[0]);
         console.log(result.viewItemURL[0]);
-
         var sellingStatus = result.sellingStatus[0];
-        console.log(sellingStatus.currentPrice);
+        console.log(sellingStatus.convertedCurrentPrice);
         console.log(moment.duration(sellingStatus.timeLeft).humanize() + ' remaining.');
         console.log('----')
     });
