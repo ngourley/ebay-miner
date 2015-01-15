@@ -1,0 +1,24 @@
+{
+  "name": "ebay-miner",
+  "version": "0.0.0",
+  "description": "",
+  "main": "app.js",
+  "dependencies": {
+    "moment": "~2.9.0",
+    "request": "~2.51.0",
+    "underscore": "~1.7.0"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ngourley/ebay-miner.git"
+  },
+  "author": "ngourley",
+  "license": "BSD-2-Clause",
+  "bugs": {
+    "url": "https://github.com/ngourley/ebay-miner/issues"
+  }
+}
