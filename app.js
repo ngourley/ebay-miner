@@ -1,6 +1,7 @@
 var request = require('request'),
     _ = require('underscore'),
-    moment = require('moment');
+    moment = require('moment'),
+    config = require('./config');
 
 const findItemsByKeywords = 'findItemsByKeywords';
 const findCompletedItems = 'findCompletedItems';
@@ -13,7 +14,7 @@ options = {
     qs: {
         'RESPONSE-DATA-FORMAT': 'JSON',
         'SERVICE-VERSION': '1.13.0',
-        'SECURITY-APPNAME': '',
+        'SECURITY-APPNAME': config.appName,
         'OPERATION-NAME': operationName,
         'keywords': 'super smash bros n64',
         'REST-PAYLOAD': true,
